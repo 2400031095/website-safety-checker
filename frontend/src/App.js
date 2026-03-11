@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
-import Contact from "./contact"; 
-import RiskScore from "./components/RiskScore"; 
+import Contact from "./contact";
+import RiskScore from "./components/RiskScore";
 
 // -------------------- Home Component --------------------
 function Home() {
@@ -11,11 +11,14 @@ function Home() {
 
   const handleCheck = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/check-website", {
+      const API_BASE = "https://website-safety-checker-s2hu.vercel.app"; // deployed backend URL
+
+      const response = await fetch(`${API_BASE}/api/check-website`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
+
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -112,9 +115,7 @@ function About() {
           whether a site is malicious, but also whether it’s a legitimate bank
           domain or a suspicious imitation.
         </p>
-        <p>
-          The website contains three main sections:
-        </p>
+        <p>The website contains three main sections:</p>
         <ul>
           <li><strong>Home:</strong> Safety checker box with verdicts and risk score.</li>
           <li><strong>About Us:</strong> Learn about our mission and how we protect users.</li>
