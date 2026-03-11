@@ -1,25 +1,39 @@
 {
-  "name": "checkfix-backend",
+  "name": "checkfix-app",
   "version": "1.0.0",
-  "description": "Backend server for the CheckFix project",
+  "description": "Fullstack CheckFix project (backend + frontend)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "frontend-start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "vercel-build": "echo 'No backend build step required'"
   },
   "keywords": [
     "express",
     "backend",
     "api",
-    "checkfix"
+    "checkfix",
+    "react",
+    "frontend"
   ],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
