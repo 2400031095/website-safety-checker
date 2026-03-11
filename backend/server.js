@@ -21,6 +21,11 @@ console.log("🚀 Backend starting...");
 
 // -------------------- Routes --------------------
 
+// Root route for backend
+app.get("/", (req, res) => {
+  res.send("✅ CheckFix Backend is running!");
+});
+
 // Health check route
 app.get("/api/health", (req, res) => {
   res.json({ status: "Backend is running!" });
