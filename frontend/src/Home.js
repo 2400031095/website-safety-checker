@@ -28,7 +28,7 @@ function Home() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:5000/check", {
+      const response = await fetch("http://website-safety-checker-nzvs3kdhw.vercel.app", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
