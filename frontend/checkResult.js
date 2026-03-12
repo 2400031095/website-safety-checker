@@ -18,8 +18,8 @@ function Home() {
 
     setLoading(true);
     try {
-      // ✅ Updated to match backend port 5000
-      const response = await fetch("http://localhost:5000/api/check-website", {
+      // ✅ Updated to match backend port 5001
+      const response = await fetch("http://localhost:5001/api/check-website", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

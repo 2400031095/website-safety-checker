@@ -4,159 +4,288 @@ import "./App.css";
 import Contact from "./contact";
 import RiskScore from "./components/RiskScore";
 
-// -------------------- Home Component --------------------
+/* -------------------- CYBER ATTACK BACKGROUND -------------------- */
+
+function CyberMap(){
+  return(
+    <div className="cyber-map-global">
+
+      <div className="attack-dot a1"></div>
+      <div className="attack-dot a2"></div>
+      <div className="attack-dot a3"></div>
+      <div className="attack-dot a4"></div>
+      <div className="attack-dot a5"></div>
+      <div className="attack-dot a6"></div>
+
+    </div>
+  )
+}
+
+/* -------------------- HOME -------------------- */
+
 function Home() {
-  const [url, setUrl] = useState("");
-  const [result, setResult] = useState(null);
+
+  const [url,setUrl] = useState("")
+  const [result,setResult] = useState(null)
 
   const handleCheck = async () => {
-    try {
-      const API_BASE = "https://website-safety-checker-s2hu.vercel.app"; // deployed backend URL
 
-      const response = await fetch(`${API_BASE}/api/check-website`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
+    try{
 
-      const data = await response.json();
-      setResult(data);
-    } catch (error) {
-      console.error("Error checking website:", error);
-      setResult({ success: false, message: "Error connecting to backend." });
+      const API_BASE = "http://localhost:5001"
+
+      const response = await fetch(`${API_BASE}/api/check-website`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({url})
+      })
+
+      const data = await response.json()
+
+      setResult(data)
+
+    }catch(err){
+
+      setResult({
+        success:false,
+        message:"Backend connection failed"
+      })
+
     }
-  };
 
-  // Helper to render verdict badge
-  const renderBadge = (verdict) => {
-    if (!verdict) return null;
-    const v = verdict.toLowerCase();
-    if (v.includes("safe")) {
-      return <span className="badge badge-safe">SAFE</span>;
-    } else if (v.includes("unsafe")) {
-      return <span className="badge badge-unsafe">UNSAFE</span>;
-    } else {
-      return <span className="badge badge-pending">SUSPICIOUS</span>;
-    }
-  };
+  }
 
-  return (
+  return(
+
     <main className="app-main">
+
+      <CyberMap/>
+
       <div className="box">
+
         <h2>Website Safety Checker</h2>
-        <p>Quickly verify if a website is safe to visit.</p>
+        <p>Scan any website and detect security threats instantly.</p>
+
         <div className="input-group">
+
           <input
-            type="text"
-            placeholder="Enter website URL..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="url-input"
+          type="text"
+          placeholder="Enter website URL"
+          value={url}
+          onChange={(e)=>setUrl(e.target.value)}
+          className="url-input"
           />
+
           <button onClick={handleCheck} className="check-button">
-            Check Website
+            Scan Website
           </button>
+
         </div>
 
         {result && (
+
           <div className="result-card">
-            <h3>Result</h3>
-            <p><strong>URL:</strong> {result.url}</p>
-            <p>
-              <strong>Verdict:</strong> {result.verdict} {renderBadge(result.verdict)}
-            </p>
 
-            {/* Banking Verdict */}
-            {result.banking && (
-              <div className="banking-box">
-                <h4>🏦 Banking Verdict</h4>
-                <p><strong>Status:</strong> {result.banking.status}</p>
-                <p><strong>Domain:</strong> {result.banking.domain || "N/A"}</p>
-              </div>
+            {result.success === false && (
+              <p className="error-text">{result.message}</p>
             )}
 
-            {/* VirusTotal Stats */}
-            {typeof result.details === "object" ? (
-              <div className="virustotal-box">
-                <h4>🛡️ VirusTotal Stats</h4>
-                <p><strong>Malicious:</strong> {result.details.malicious}</p>
-                <p><strong>Suspicious:</strong> {result.details.suspicious}</p>
-                <p><strong>Undetected:</strong> {result.details.undetected}</p>
-
-                {/* Risk Score Bar */}
-                <RiskScore stats={result.details} />
-              </div>
-            ) : (
-              <p><strong>Details:</strong> {result.details}</p>
+            {result.url && (
+              <p className="url-display">
+                🔗 {result.url}
+              </p>
             )}
+
+            {result.verdict && (
+              <h3 className="verdict">
+                {result.verdict === "Safe" ? "🟢 Website is Safe" : "🔴 Potentially Unsafe"}
+              </h3>
+            )}
+
+            {result.details && (
+
+              <div className="analysis-grid">
+
+                <div className="analysis-card">
+                  <h4>Malicious</h4>
+                  <p>{result.details.malicious}</p>
+                </div>
+
+                <div className="analysis-card">
+                  <h4>Suspicious</h4>
+                  <p>{result.details.suspicious}</p>
+                </div>
+
+                <div className="analysis-card">
+                  <h4>Harmless</h4>
+                  <p>{result.details.harmless}</p>
+                </div>
+
+              </div>
+
+            )}
+
+            {result.details && (
+              <RiskScore stats={result.details}/>
+            )}
+
           </div>
+
         )}
+
       </div>
+
     </main>
-  );
+
+  )
 }
 
-// -------------------- About Component --------------------
-function About() {
-  return (
+/* -------------------- ABOUT -------------------- */
+
+function About(){
+
+  return(
+
     <main className="app-main">
-      <div className="box">
-        <h2>About Us</h2>
-        <p>
-          CheckFix was created to give users a simple, reliable way to verify
-          whether a website is safe before visiting it. The core of our platform
-          is the <strong>Website Safety Checker box</strong> you see on the Home
-          page — enter any URL, and our system instantly analyzes it.
-        </p>
-        <p>
-          Behind the scenes, CheckFix combines trusted security APIs like
-          <strong> VirusTotal</strong> with our own <strong>Banking URL
-          detection</strong> logic. This means you not only get a verdict on
-          whether a site is malicious, but also whether it’s a legitimate bank
-          domain or a suspicious imitation.
-        </p>
-        <p>The website contains three main sections:</p>
-        <ul>
-          <li><strong>Home:</strong> Safety checker box with verdicts and risk score.</li>
-          <li><strong>About Us:</strong> Learn about our mission and how we protect users.</li>
-          <li><strong>Contact Us:</strong> Reach out with feedback or security concerns.</li>
-        </ul>
-        <p>
-          Our mission is clear: <em>to make browsing safer by combining AI,
-          cybersecurity, and banking awareness into one easy‑to‑use tool.</em>
-        </p>
+
+      <CyberMap/>
+
+      <div className="about-grid">
+
+        <div className="box about-box">
+
+          <h2>👩‍💻 About the Creator</h2>
+
+          <p>
+
+          <strong>Pujitha Vempala</strong> is a Computer Science student
+          focusing on Artificial Intelligence, Cybersecurity, and Generative AI.
+
+          She enjoys building intelligent systems that combine
+          secure backend architectures with modern user interfaces.
+
+          </p>
+
+          <p>
+
+          This project demonstrates her interest in
+          **cyber defense, phishing detection, and security automation**.
+
+          </p>
+
+          <a
+          href="https://www.linkedin.com/in/pujitha-vempala-991202365"
+          target="_blank"
+          rel="noreferrer"
+          className="linkedin-btn"
+          >
+          🔗 View LinkedIn Profile
+          </a>
+
+        </div>
+
+        <div className="box about-box">
+
+          <h2>🌐 What CheckFix Does</h2>
+
+          <p>
+
+          CheckFix is a security tool designed to help users verify whether a website
+          is safe before interacting with it.
+
+          </p>
+
+          <ul>
+
+            <li>Detects suspicious URLs</li>
+            <li>Uses VirusTotal security intelligence</li>
+            <li>Provides safety verdicts instantly</li>
+            <li>Shows threat analysis statistics</li>
+
+          </ul>
+
+        </div>
+
+        <div className="box about-box">
+
+          <h2>📦 Features</h2>
+
+          <ul>
+
+            <li>Website safety scanning</li>
+            <li>VirusTotal threat analysis</li>
+            <li>Risk score visualization</li>
+            <li>Cyber-attack themed interface</li>
+
+          </ul>
+
+        </div>
+
       </div>
+
     </main>
-  );
+
+  )
+
 }
 
-// -------------------- App Component with Routing --------------------
-function App() {
-  return (
+/* -------------------- APP -------------------- */
+
+function App(){
+
+  return(
+
     <Router>
+
       <div className="app-container">
+
         <header className="app-header">
-          <h1>🔍 CheckFix</h1>
-          <p className="subtitle">Quickly verify if a website is safe</p>
-          <nav>
-            <Link to="/" className="nav-link">Home</Link>
-            <Link to="/about" className="nav-link">About Us</Link>
-            <Link to="/contact" className="nav-link">Contact Us</Link>
-          </nav>
+
+          <h1>🛡 CheckFix</h1>
+          <p className="subtitle">AI Website Security Scanner</p>
+
+          <div className="nav-boxes">
+
+            <Link to="/" className="nav-card">
+              🏠
+              <span>Home</span>
+            </Link>
+
+            <Link to="/about" className="nav-card">
+              ℹ️
+              <span>About</span>
+            </Link>
+
+            <Link to="/contact" className="nav-card">
+              📩
+              <span>Contact</span>
+            </Link>
+
+          </div>
+
         </header>
 
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+
+          <Route path="/" element={<Home/>}/>
+          <Route path="/about" element={<About/>}/>
+          <Route path="/contact" element={<Contact/>}/>
+
         </Routes>
 
         <footer className="app-footer">
-          <p>© 2026 CheckFix | Secure browsing made simple</p>
+
+          © 2026 CheckFix  
+          Built by Pujitha Vempala
+
         </footer>
+
       </div>
+
     </Router>
-  );
+
+  )
+
 }
 
-export default App;
+export default App

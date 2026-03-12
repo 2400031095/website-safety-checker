@@ -3,14 +3,14 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-// Banking check module (make sure checkBanking.js exists)
+// Banking check module
 const checkBankingURL = require("./checkBanking");
 
 // -------------------- App Setup --------------------
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-// ✅ VirusTotal API key (for future real mode)
+// VirusTotal API key (future use)
 const API_KEY = "feefe7b18db333a11ffb5ab301a710ca54aa2adfb86bcaaafb9ba9a194471140";
 
 app.use(cors());
@@ -21,7 +21,7 @@ console.log("🚀 Backend starting...");
 
 // -------------------- Routes --------------------
 
-// Root route for backend
+// Root route
 app.get("/", (req, res) => {
   res.send("✅ CheckFix Backend is running!");
 });
@@ -31,7 +31,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "Backend is running!" });
 });
 
-// Website check route (DEV mode: instant dummy responses)
+// Website check route
 app.post("/api/check-website", (req, res) => {
   const { url } = req.body;
 
@@ -43,10 +43,28 @@ app.post("/api/check-website", (req, res) => {
     });
   }
 
-  // ✅ Banking check (dummy for now)
+  // ---------------- Domain Analysis ----------------
+  const suspiciousWords = ["login", "verify", "secure", "bank", "update"];
+  let domain = "";
+  let suspiciousScore = 0;
+
+  try {
+    domain = new URL(url).hostname;
+
+    suspiciousWords.forEach(word => {
+      if (domain.includes(word)) {
+        suspiciousScore++;
+      }
+    });
+
+  } catch (err) {
+    console.log("Invalid URL format");
+  }
+
+  // Banking check
   const bankingResult = checkBankingURL(url);
 
-  // ✅ Simulate Unsafe verdict for phishing URLs
+  // Simulate unsafe phishing URLs
   if (url.includes("phishing")) {
     return res.json({
       success: true,
@@ -54,20 +72,28 @@ app.post("/api/check-website", (req, res) => {
       verdict: "Unsafe",
       details: { malicious: 5, suspicious: 2, undetected: 0, harmless: 0 },
       banking: { status: "Suspicious", domain: "phishing-example.com" },
+      domainAnalysis: {
+        domain,
+        suspiciousIndicators: suspiciousScore
+      }
     });
   }
 
-  // ✅ Default Safe response
+  // Default Safe response
   return res.json({
     success: true,
     url,
     verdict: "Safe",
     details: { malicious: 0, suspicious: 0, undetected: 10, harmless: 20 },
     banking: { status: "Legitimate", domain: "examplebank.com" },
+    domainAnalysis: {
+      domain,
+      suspiciousIndicators: suspiciousScore
+    }
   });
 });
 
-// Login route
+// ---------------- Login Route ----------------
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
   console.log("Login attempt:", email);
@@ -81,7 +107,7 @@ app.post("/api/login", (req, res) => {
   }
 });
 
-// Contact route
+// ---------------- Contact Route ----------------
 app.post("/api/contact", (req, res) => {
   const { name, email, message } = req.body;
 
@@ -94,13 +120,10 @@ app.post("/api/contact", (req, res) => {
   res.json({ success: true, message: "Message received! We'll get back to you soon." });
 });
 
-// -------------------- Frontend Serving --------------------
+// ---------------- Frontend Serving ----------------
 app.use(express.static(path.join(__dirname, "../frontend/build")));
-app.get("/", (req, res) => {
-  res.send("✅ CheckFix Backend is running!");
-});
 
-// -------------------- Server Startup --------------------
+// ---------------- Server Startup ----------------
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });

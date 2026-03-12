@@ -1,133 +1,116 @@
-import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 function Home() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [attack, setAttack] = useState("");
 
-  const handleCheck = async () => {
-    if (!url.trim()) {
-      toast.warn("⚠️ Please enter a website URL first.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
+  const attacks = [
+    "Russia → USA",
+    "China → Germany",
+    "Brazil → UK",
+    "India → Australia",
+    "North Korea → Japan",
+    "Iran → France"
+  ];
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const random = attacks[Math.floor(Math.random() * attacks.length)];
+      setAttack(random);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkWebsite = async () => {
     setLoading(true);
+    setResult(null);
+
     try {
-      const response = await fetch("http://localhost:5000/api/check-website", {
+      const response = await fetch("http://localhost:5000/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url })
       });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
-
       const data = await response.json();
-      console.log("Backend response:", data);
       setResult(data);
 
-      const verdict = (data.verdict || "").toLowerCase();
-
-      if (verdict.includes("unsafe")) {
-        toast.error(`⚠️ Warning: ${url} is Unsafe!`, {
-          position: "top-right",
-          autoClose: 5000,
-        });
-      } else if (verdict.includes("safe")) {
-        toast.success(`✅ ${url} is Safe!`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } else {
-        toast.info(`⏳ ${url} analysis is Pending...`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
-    } catch (error) {
-      console.error("Error checking website:", error);
-      setResult({
-        success: false,
-        url,
-        verdict: "Error",
-        details: "Backend not reachable",
-      });
-      toast.error("❌ Error connecting to backend.", {
-        position: "top-right",
-        autoClose: 5000,
-      });
-    } finally {
-      setLoading(false);
+      if (data.success) setHistory(prev => [url, ...prev.slice(0, 4)]);
+    } catch {
+      setResult({ success: false });
     }
+
+    setLoading(false);
   };
 
+  const riskScore = result ? (result.verdict === "Safe" ? 10 : 85) : 0;
+
   return (
-    <main className="app-main">
-      <div className="box">
-        <h2>Website Safety Checker</h2>
-        <p>Quickly verify if a website is safe to visit.</p>
+    <>
+      {/* SCANNER */}
+      <div className="scanner-card">
+        <h2>Website Security Scanner</h2>
         <div className="input-group">
           <input
-            type="text"
-            placeholder="Enter website URL..."
+            className="url-input"
+            placeholder="Enter website URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="url-input"
           />
-          <button onClick={handleCheck} className="check-button">
-            Check Website
+          <button className="scan-btn" onClick={checkWebsite}>
+            Scan
           </button>
         </div>
 
-        {loading && <p>🔄 Checking website...</p>}
+        {loading && (
+          <div className="scan-loader">
+            <div className="radar"></div>
+            <p>Scanning Website Security...</p>
+            <div className="scan-progress">
+              <div className="scan-bar"></div>
+            </div>
+          </div>
+        )}
 
-        {result && (
+        {result && result.success && (
           <div className="result-card">
-            <h3>Result</h3>
-            <p><strong>URL:</strong> {result.url || "N/A"}</p>
-
-            {/* ✅ Verdict with correct badge */}
-            <p>
-              <strong>Verdict:</strong>{" "}
-              <span
-                className={
-                  (result.verdict || "").toLowerCase().includes("unsafe")
-                    ? "badge badge-unsafe"
-                    : (result.verdict || "").toLowerCase().includes("safe")
-                    ? "badge badge-safe"
-                    : "badge badge-pending"
-                }
-              >
-                {result.verdict || "No verdict yet"}
-              </span>
-            </p>
-
-            {result.details && typeof result.details === "object" ? (
-              <div>
-                <p><strong>Malicious:</strong> {result.details.malicious ?? 0}</p>
-                <p><strong>Suspicious:</strong> {result.details.suspicious ?? 0}</p>
-                <p><strong>Undetected:</strong> {result.details.undetected ?? 0}</p>
-              </div>
-            ) : (
-              <p><strong>Details:</strong> {result.details || "No details available"}</p>
-            )}
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${url}&sz=64`}
+              className="site-icon"
+              alt=""
+            />
+            <h3>{url}</h3>
+            <div
+              className={`verdict ${
+                result.verdict === "Safe" ? "safe" : "danger"
+              }`}
+            >
+              {result.verdict}
+            </div>
           </div>
         )}
       </div>
 
-      <ToastContainer />
-      {result && (
-        <pre style={{ background: "#f4f4f4", padding: "10px", marginTop: "10px" }}>
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
-    </main>
+      {/* SCAN HISTORY */}
+      <div className="history-card">
+        <h2>Recent Scans</h2>
+        <ul>
+          {history.map((site, index) => (
+            <li key={index}>{site}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ATTACK PANEL */}
+      <div className="attack-panel">
+        <h2>Live Global Cyber Threat Activity</h2>
+        <div className="attack-map">
+          <div className="attack-line"></div>
+          <p className="attack-text">Attack detected: {attack}</p>
+        </div>
+      </div>
+    </>
   );
 }
 
