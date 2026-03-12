@@ -28,7 +28,8 @@ function Home() {
     setResult(null);
 
     try {
-      const response = await fetch("http://website-safety-checker-nzvs3kdhw.vercel.app", {
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const response = await fetch(`${API_URL}/scan`, { ... });
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
